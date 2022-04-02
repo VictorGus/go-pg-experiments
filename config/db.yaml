@@ -1,1 +1,21 @@
-test: foo
+tables:
+ - tableName: organization
+   schemas:
+    - name: id
+      type: text
+    - name: name
+      type: text
+    - name: email
+      type: text 
+    - name: address
+      type: text 
+ - tableName: user
+   schemas:
+    - name: id
+      type: text
+    - name: name
+      type: text
+    - name: email
+      type: text 
+    - name: password
+      type: text 

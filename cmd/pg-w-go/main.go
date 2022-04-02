@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -150,8 +149,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, err = os.Open("../../config/db.yaml")
-	fmt.Println(err)
+	config := getConfig("../../config/db.yaml")
+	fmt.Printf("%+v\n", config)
 
 	// var testConfig DatabaseConfig
 	// var testTables []Table
