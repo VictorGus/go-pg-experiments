@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/VictorGus/pg-w-go/internal/handlers"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
+	"github.com/labstack/echo/v4"
 )
 
 type Person struct {
@@ -174,5 +176,20 @@ func main() {
 	// testConfig = DatabaseConfig{Tables: testTables}
 
 	// applySchemas(db, testConfig)
+	server := echo.New()
+
+	server.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(ctx echo.Context) error {
+			ctx.Set("db-connection", db)
+			return next(ctx)
+		}
+	})
+
+	server.POST("/person", handlers.HandleCreate)
+
+	err = server.Start(":7777")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
