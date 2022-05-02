@@ -15,3 +15,5 @@ up:
 	docker-compose up -d
 down:
 	docker-compose down
+test:
+	cd internal && go test ./...

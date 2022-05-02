@@ -39,6 +39,7 @@ CREATE TABLE if not exists place (
 
 func main() {
 	// connectionString := "user=postgres dbname=gobase password=postgres sslmode=disable"
+	InitDataBase()
 	connectionString := "postgres://postgres:postgres@localhost:5444/gobase"
 
 	db, err := sqlx.Open("pgx", connectionString)
@@ -175,7 +176,8 @@ func main() {
 
 	// testConfig = DatabaseConfig{Tables: testTables}
 
-	// applySchemas(db, testConfig)
+	applySchemas(db, config)
+
 	server := echo.New()
 
 	server.Use(func(next echo.HandlerFunc) echo.HandlerFunc {

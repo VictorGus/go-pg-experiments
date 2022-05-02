@@ -9,13 +9,13 @@ tables:
       type: text 
     - name: address
       type: text 
- - tableName: user
+ - tableName: app_user
    schemas:
     - name: id
       type: text
-    - name: name
+    - name: username
       type: text
-    - name: email
+    - name: role
       type: text 
     - name: password
       type: text 

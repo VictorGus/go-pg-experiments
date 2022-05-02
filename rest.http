@@ -1,8 +1,0 @@
-@url = http://localhost:7777
-
-POST {{url}}/person
-Content-Type: application/json
-
-{"name": "TestoviyUser",
-"password": "12345"
-}

@@ -35,7 +35,9 @@ func HandleCreate(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, err)
 	}
 
-	res, err := connection.NamedExec("INSERT INTO person (id, name, email, address) VALUES (:id, :name, :email, address)", data) // shaper of params depending on resourceType
+	res, err := connection.NamedExec(
+		"INSERT INTO person (id, name, email, address) VALUES (:id, :name, :email, address)",
+		data) // shaper of params depending on resourceType
 	if err != nil {
 		log.Println(err)
 		return ctx.JSON(http.StatusInternalServerError, err)

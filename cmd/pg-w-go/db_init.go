@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	_ "github.com/jackc/pgx/stdlib"
@@ -14,7 +15,7 @@ type Schema struct {
 }
 
 type Table struct {
-	TableName string
+	TableName string `yaml:"tableName"`
 	Schemas   []Schema
 }
 
@@ -35,7 +36,32 @@ func applySchemas(db *sqlx.DB, config DatabaseConfig) {
 			gluedParts = append(gluedParts, schema.Name+" "+schema.Type)
 		}
 		gluedPartsString := strings.Join(gluedParts, ",")
-		res := db.MustExec("CREATE TABLE if not exists " + table.TableName + "(" + gluedPartsString + ")")
-		fmt.Println(res)
+		db.MustExec("CREATE TABLE if not exists " + table.TableName + "(" + gluedPartsString + ")")
 	}
+}
+
+func InitDataBase(config DatabaseConfig) {
+	// connectionString := "postgres://postgres:postgres@localhost:5444"
+	connectionString := fmt.Sprintf(
+		"%s://%s:%s@%s:%s", config.DBUser, config.DBUser, config.DBPassword, config.DBHost, config.DBPort)
+	db, err := sqlx.Open("pgx", connectionString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	queryString := fmt.Sprintf("SELECT * FROM pg_database WHERE datname = '%s'", config.DBName)
+
+	rows, err := db.Queryx(queryString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !rows.Next() {
+		db.MustExec("CREATE DATABASE gobase_test TEMPLATE gobase")
+		log.Println("Test db has been initiated")
+	} else {
+		log.Println("Test db already exists")
+	}
+
+	defer db.Close()
 }
