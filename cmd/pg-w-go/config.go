@@ -7,6 +7,25 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+type Schema struct {
+	Name string `db:"column_name"`
+	Type string `db:"data_type"`
+}
+
+type Table struct {
+	TableName string `yaml:"tableName"`
+	Schemas   []Schema
+}
+
+type DatabaseConfig struct {
+	Tables     []Table
+	DBName     string
+	DBUser     string
+	DBPassword string
+	DBHost     string
+	DBPort     string
+}
+
 func getConfig(configPath string) DatabaseConfig {
 	dataBaseConfig := DatabaseConfig{}
 

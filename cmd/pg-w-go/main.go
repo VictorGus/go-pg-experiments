@@ -38,8 +38,9 @@ CREATE TABLE if not exists place (
 `
 
 func main() {
-	// connectionString := "user=postgres dbname=gobase password=postgres sslmode=disable"
-	InitDataBase()
+	config := getConfig("../../config/db.yaml")
+	EnrichWithCreds(&config)
+	InitDataBase(config)
 	connectionString := "postgres://postgres:postgres@localhost:5444/gobase"
 
 	db, err := sqlx.Open("pgx", connectionString)
@@ -152,9 +153,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	config := getConfig("../../config/db.yaml")
-	fmt.Printf("%+v\n", config)
-
 	// var testConfig DatabaseConfig
 	// var testTables []Table
 	// testTables = []Table{
@@ -175,8 +173,6 @@ func main() {
 	// }
 
 	// testConfig = DatabaseConfig{Tables: testTables}
-
-	applySchemas(db, config)
 
 	server := echo.New()
 

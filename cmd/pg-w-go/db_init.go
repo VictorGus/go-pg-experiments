@@ -3,30 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 )
-
-type Schema struct {
-	Name string `db:"column_name"`
-	Type string `db:"data_type"`
-}
-
-type Table struct {
-	TableName string `yaml:"tableName"`
-	Schemas   []Schema
-}
-
-type DatabaseConfig struct {
-	Tables     []Table
-	DBName     string
-	DBUser     string
-	DBPassword string
-	DBHost     string
-	DBPort     string
-}
 
 func applySchemas(db *sqlx.DB, config DatabaseConfig) {
 	tables := config.Tables
@@ -40,8 +22,15 @@ func applySchemas(db *sqlx.DB, config DatabaseConfig) {
 	}
 }
 
+func EnrichWithCreds(config *DatabaseConfig) {
+	config.DBUser = os.Getenv("PGUSER")
+	config.DBPassword = os.Getenv("PGPASSWORD")
+	config.DBHost = os.Getenv("PGHOST")
+	config.DBPort = os.Getenv("PGPORT")
+	config.DBName = os.Getenv("PGDATABASE")
+}
+
 func InitDataBase(config DatabaseConfig) {
-	// connectionString := "postgres://postgres:postgres@localhost:5444"
 	connectionString := fmt.Sprintf(
 		"%s://%s:%s@%s:%s", config.DBUser, config.DBUser, config.DBPassword, config.DBHost, config.DBPort)
 	db, err := sqlx.Open("pgx", connectionString)
@@ -57,10 +46,36 @@ func InitDataBase(config DatabaseConfig) {
 	}
 
 	if !rows.Next() {
-		db.MustExec("CREATE DATABASE gobase_test TEMPLATE gobase")
-		log.Println("Test db has been initiated")
+		db.MustExec("CREATE DATABASE " + config.DBName)
+		log.Printf("%s db has been initiated\n", config.DBName)
 	} else {
-		log.Println("Test db already exists")
+		log.Printf("%s db already exists", config.DBName)
+	}
+
+	db.Close()
+	appDB, err := sqlx.Open("pgx", connectionString+"/"+config.DBName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	applySchemas(appDB, config)
+	appDB.Close()
+	db, err = sqlx.Open("pgx", connectionString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	queryString = fmt.Sprintf("SELECT * FROM pg_database WHERE datname = '%s_test'", config.DBName)
+	rows, err = db.Queryx(queryString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !rows.Next() {
+		db.MustExec("CREATE DATABASE " + config.DBName + "_test TEMPLATE " + config.DBName)
+		log.Printf("%s_test db has been initiated\n", config.DBName)
+	} else {
+		log.Printf("%s_test db already exists", config.DBName)
 	}
 
 	defer db.Close()

@@ -19,7 +19,7 @@ func (u *User) GetTableName() string {
 }
 
 func (u *User) Create(db *sqlx.DB) (sql.Result, error) {
-	if u.Id != "" {
+	if u.Id == "" {
 		u.Id = uuid.New().String()
 	}
 
@@ -32,15 +32,22 @@ func (u *User) Create(db *sqlx.DB) (sql.Result, error) {
 }
 
 func (u *User) Read(db *sqlx.DB, id string) error {
-	tableName := u.GetTableName()
-	err := db.Get(&u, "SELECT * FROM $1 WHERE id=$2", tableName, id)
+	// tableName := u.GetTableName()
+	err := db.Get(u, "SELECT * FROM app_user WHERE id = $1", id)
 	return err
 }
 
-func (u *User) Update(db *sqlx.DB, id string) error {
-	return nil
+func (u *User) Update(db *sqlx.DB) (sql.Result, error) {
+	res, err :=
+		db.NamedExec(
+			"UPDATE app_user SET username = :username, password = :password, role = :role WHERE id = :id",
+			u)
+
+	return res, err
 }
 
 func (u *User) Delete(db *sqlx.DB, id string) (sql.Result, error) {
-	return nil, nil
+	res, err :=
+		db.Exec("DELETE FROM app_user WHERE id = $1", id)
+	return res, err
 }
